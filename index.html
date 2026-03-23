@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA Promo Med+Info</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <header class="hero">
+        <div class="hero-left">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="NOVA Logo" class="logo">
+        </div>
+
+        <div class="hero-right">
+            <h1>NOVA Promo Med+Info</h1>
+            <p>
+                الوحدات: المعدل = (TP + 4×EX) / 5
+                <span class="sep">|</span>
+                Génétique و Immuno يحسبان بالاختبار فقط
+            </p>
+        </div>
+    </header>
+
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" class="grid">
+        <section class="card">
+            <h2>الوحدات (TP + EX)</h2>
+            <p class="muted">أدخل TP و EX على 20</p>
+
+            <div class="table">
+                <div class="table-head">الوحدة</div>
+                <div class="table-head">TP /20</div>
+                <div class="table-head">EX /20</div>
+
+                {% for unit in units %}
+                    <div class="table-cell subject">{{ unit }}</div>
+                    <div class="table-cell">
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="20"
+                            name="{{ unit }}_tp"
+                            value="{{ form_data.get(unit ~ '_tp', '') }}"
+                            required
+                        >
+                    </div>
+                    <div class="table-cell">
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="20"
+                            name="{{ unit }}_ex"
+                            value="{{ form_data.get(unit ~ '_ex', '') }}"
+                            required
+                        >
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>المقاييس (EX فقط)</h2>
+            <p class="muted">أدخل الاختبار على 20</p>
+
+            <div class="table small">
+                <div class="table-head">المقياس</div>
+                <div class="table-head">EX /20</div>
+
+                {% for subject in exam_only %}
+                    <div class="table-cell subject">{{ subject }}</div>
+                    <div class="table-cell">
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="20"
+                            name="{{ subject }}_ex"
+                            value="{{ form_data.get(subject ~ '_ex', '') }}"
+                            required
+                        >
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="formula-box">
+                <strong>ملاحظة:</strong><br>
+                إذا كانت نقطة أي وحدة أو مقياس أقل من 5 فهي نقطة إقصائية ويجب اجتياز الاستدراك.
+            </div>
+        </section>
+
+        <div class="actions">
+            <button type="submit" class="btn primary">حساب المعدل</button>
+            <a href="/" class="btn secondary">إعادة التعيين</a>
+        </div>
+    </form>
+
+    {% if results %}
+    <section class="results card">
+        <h2>النتائج</h2>
+
+        <div class="result-summary">
+            <div class="summary-box">
+                <span>المعدل العام</span>
+                <strong>{{ results.general_average }}/20</strong>
+            </div>
+
+            <div class="summary-box {% if results.general_average >= 10 %}success{% else %}danger{% endif %}">
+                <span>النتيجة النهائية</span>
+                <strong>{{ results.status }}</strong>
+            </div>
+        </div>
+
+        <div class="notes-list">
+            {% for subject, note in results.final_notes.items() %}
+                <div class="note-row">
+                    <span>{{ subject }}</span>
+                    <span>{{ note }}/20</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="rattrapage-box">
+            <h3>مواد الاستدراك</h3>
+            {% if results.rattrapage %}
+                <ul>
+                    {% for item in results.rattrapage %}
+                        <li>{{ item }} — ستجتاز الاستدراك</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>لا توجد مواد إقصائية.</p>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+</body>
+</html>
