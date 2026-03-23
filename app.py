@@ -26,7 +26,10 @@ def index():
         try:
             final_notes = {}
             rattrapage = []
+            weighted_sum = 0
+            total_coef = 0
 
+            # الوحدات: معامل 2
             for unit in UNITS:
                 tp_key = f"{unit}_tp"
                 ex_key = f"{unit}_ex"
@@ -38,22 +41,33 @@ def index():
                 ex = to_float(form_data[ex_key])
 
                 moyenne = (tp + (4 * ex)) / 5
-                final_notes[unit] = round(moyenne, 2)
+                moyenne = round(moyenne, 2)
+
+                final_notes[unit] = moyenne
 
                 if moyenne < 5:
                     rattrapage.append(unit)
 
+                weighted_sum += moyenne * 2
+                total_coef += 2
+
+            # المقاييس: معامل 1
             for subject in EXAM_ONLY:
                 ex_key = f"{subject}_ex"
                 form_data[ex_key] = request.form.get(ex_key, "")
 
                 ex = to_float(form_data[ex_key])
-                final_notes[subject] = round(ex, 2)
+                ex = round(ex, 2)
+
+                final_notes[subject] = ex
 
                 if ex < 5:
                     rattrapage.append(subject)
 
-            general_average = round(sum(final_notes.values()) / len(final_notes), 2)
+                weighted_sum += ex * 1
+                total_coef += 1
+
+            general_average = round(weighted_sum / total_coef, 2)
             status = "ناجح" if general_average >= 10 else "راسب - امتحان استدراك"
 
             results = {
